@@ -126,7 +126,7 @@ const BlogPost = () => {
 
       {/* HERO SECTION */}
       <header className="relative w-full h-[75vh] overflow-hidden mt-0">
-        <img src={coverImage} alt={blog.title} className="w-full h-full object-cover" />
+        <img src={coverImage} alt={blog.title} className="w-full h-full object-cover" style={{ objectPosition: blog.cover_position || 'center' }} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
         
         <div className="absolute bottom-0 left-0 w-full p-6 md:p-12 text-white max-w-5xl mx-auto pb-16">
