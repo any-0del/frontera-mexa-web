@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Share2, Heart, MapPin, Briefcase } from 'lucide-react';
+import { ArrowLeft, Share2, Heart, MapPin, Briefcase, Linkedin, Instagram, Twitter } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import confetti from 'canvas-confetti';
 
@@ -94,26 +94,23 @@ const BlogPost = () => {
 
   const coverImage = blog.cover_image || "https://images.unsplash.com/photo-1517487881594-2787fdb86ef5?auto=format&fit=crop&w=1200";
 
-  // Desestructuramos la descripción para mostrarla bonita
-  // (Si guardaste "Arquitecta • Londres", aquí lo separamos visualmente)
+  // Procesar descripción y redes sociales
   const descriptionParts = blog.description ? blog.description.split('•') : ['Profesión no definida', 'Ubicación no definida'];
   const profession = descriptionParts[0]?.trim();
   const location = descriptionParts[1]?.trim();
+  const social = blog.social_links || {}; // Recuperamos los links
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] font-sans pb-20">
       
-      {/* NAV CRISTAL (SEMI-TRANSPARENTE) CON EL NOMBRE DE LA PERSONA */}
+      {/* NAV CRISTAL */}
       <nav className="fixed top-0 w-full bg-[#FDFBF7]/80 backdrop-blur-md z-50 border-b border-slate-200/50 px-6 py-4 flex justify-between items-center transition-all duration-300">
         <button onClick={() => navigate('/')} className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition">
             <ArrowLeft size={20} /> <span className="hidden md:inline">Volver</span>
         </button>
-        
-        {/* Aquí va el Nombre de la Persona como Título del Nav */}
         <span className="font-serif font-bold tracking-widest text-sm uppercase truncate max-w-[200px] md:max-w-none text-slate-900">
             {blog.title}
         </span>
-
         <div className="flex items-center gap-4">
             <button onClick={handleLike} className="flex items-center gap-1.5 group transition">
                 <div className={`p-2 rounded-full transition duration-300 ${isLiked ? 'bg-red-50' : 'hover:bg-slate-100'}`}>
@@ -127,38 +124,57 @@ const BlogPost = () => {
         </div>
       </nav>
 
-      {/* HERO SECTION (PORTADA ESTRUCTURADA) */}
-      <header className="relative w-full h-[70vh] overflow-hidden mt-0">
+      {/* HERO SECTION */}
+      <header className="relative w-full h-[75vh] overflow-hidden mt-0">
         <img src={coverImage} alt={blog.title} className="w-full h-full object-cover" />
-        {/* Degradado para que el texto blanco se lea perfecto */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
         
         <div className="absolute bottom-0 left-0 w-full p-6 md:p-12 text-white max-w-5xl mx-auto pb-16">
           
-          {/* Tag de Estado */}
           <span className="inline-block px-3 py-1 mb-6 text-[10px] font-bold tracking-[0.2em] uppercase rounded-sm bg-orange-700 text-white">
-            {blog.status === 'pending' ? 'Pendiente de Aprobación' : 'Historia Oficial'}
+            {blog.status === 'pending' ? 'Pendiente' : 'Historia Oficial'}
           </span>
           
-          {/* NOMBRE GIGANTE (Solo el nombre) */}
           <h1 className="text-5xl md:text-8xl font-serif font-bold leading-none mb-6 tracking-tight">
             {blog.title}
           </h1>
           
-          {/* ESTRUCTURA SEPARADA: Profesión | Lugar */}
-          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 text-slate-200 border-l-4 border-orange-500 pl-4 md:pl-6">
-             <div className="flex items-center gap-2">
-                <Briefcase size={18} className="text-orange-500"/>
-                <span className="text-lg md:text-xl font-light uppercase tracking-widest">{profession}</span>
-             </div>
+          {/* INFO PERFIL + REDES SOCIALES */}
+          <div className="flex flex-col gap-6 border-l-4 border-orange-500 pl-4 md:pl-6">
              
-             {/* Separador visible solo en escritorio */}
-             <span className="hidden md:block text-slate-500 text-2xl font-thin">|</span>
-             
-             <div className="flex items-center gap-2">
-                <MapPin size={18} className="text-orange-500"/>
-                <span className="text-lg md:text-xl font-light uppercase tracking-widest">{location}</span>
+             {/* Profesión y Lugar */}
+             <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 text-slate-200">
+                <div className="flex items-center gap-2">
+                    <Briefcase size={18} className="text-orange-500"/>
+                    <span className="text-lg md:text-xl font-light uppercase tracking-widest">{profession}</span>
+                </div>
+                <span className="hidden md:block text-slate-500 text-2xl font-thin">|</span>
+                <div className="flex items-center gap-2">
+                    <MapPin size={18} className="text-orange-500"/>
+                    <span className="text-lg md:text-xl font-light uppercase tracking-widest">{location}</span>
+                </div>
              </div>
+
+             {/* --- REDES SOCIALES (ICONOS) --- */}
+             {(social.linkedin || social.instagram || social.twitter) && (
+                 <div className="flex items-center gap-4 pt-2">
+                    {social.linkedin && (
+                        <a href={social.linkedin} target="_blank" rel="noreferrer" className="bg-white/10 p-2 rounded-full hover:bg-white hover:text-blue-700 transition">
+                            <Linkedin size={20} />
+                        </a>
+                    )}
+                    {social.instagram && (
+                        <a href={`https://instagram.com/${social.instagram.replace('@','')}`} target="_blank" rel="noreferrer" className="bg-white/10 p-2 rounded-full hover:bg-white hover:text-pink-600 transition">
+                            <Instagram size={20} />
+                        </a>
+                    )}
+                    {social.twitter && (
+                        <a href={social.twitter} target="_blank" rel="noreferrer" className="bg-white/10 p-2 rounded-full hover:bg-white hover:text-black transition">
+                            <Twitter size={20} />
+                        </a>
+                    )}
+                 </div>
+             )}
           </div>
 
         </div>
@@ -167,7 +183,6 @@ const BlogPost = () => {
       {/* CONTENIDO DEL BLOG */}
       <article className="max-w-3xl mx-auto px-6 py-20 space-y-16">
         
-        {/* Intro Metadata */}
         <div className="flex justify-center pb-8 border-b border-slate-200">
              <p className="text-sm text-slate-400 uppercase tracking-widest">
                  Publicado el {new Date(blog.created_at).toLocaleDateString()}
@@ -181,7 +196,6 @@ const BlogPost = () => {
                         {block.content}
                     </p>
                 )}
-                
                 {block.type === 'question' && (
                     <div className="mt-16 mb-8">
                         <h3 className="font-serif text-3xl font-bold text-slate-900 mb-2">
@@ -190,7 +204,6 @@ const BlogPost = () => {
                         <div className="w-16 h-1 bg-orange-500"></div>
                     </div>
                 )}
-                
                 {block.type === 'image' && (
                     <figure className="my-12 group">
                         <div className="overflow-hidden rounded-lg shadow-2xl">
@@ -198,7 +211,6 @@ const BlogPost = () => {
                         </div>
                     </figure>
                 )}
-                
                 {block.type === 'video' && (
                     <div className="my-12 w-full aspect-video rounded-lg overflow-hidden shadow-xl bg-black">
                         <iframe width="100%" height="100%" src={`https://www.youtube.com/embed/${getYouTubeID(block.content)}`} frameBorder="0" allowFullScreen></iframe>
@@ -208,23 +220,19 @@ const BlogPost = () => {
         ))}
       </article>
 
-      {/* FOOTER LLAMADA A LA ACCIÓN */}
+      {/* FOOTER */}
       <div className="bg-slate-900 text-white py-20 text-center px-4 mt-12">
           <h4 className="font-serif text-3xl md:text-4xl mb-6">¿Tienes una historia que contar?</h4>
           <p className="text-slate-400 mb-10 max-w-xl mx-auto text-lg">
-             Únete a nuestra comunidad y comparte tu experiencia viviendo en el extranjero. Tu historia puede inspirar a miles.
+             Únete a nuestra comunidad y comparte tu experiencia viviendo en el extranjero.
           </p>
           <div className="flex flex-col md:flex-row justify-center gap-4">
-            <button onClick={() => navigate('/crear')} className="bg-orange-700 text-white px-10 py-4 rounded-full hover:bg-orange-600 transition font-bold shadow-lg transform hover:-translate-y-1 text-lg">
+            <button onClick={() => navigate('/crear')} className="bg-orange-700 text-white px-10 py-4 rounded-full hover:bg-orange-600 transition font-bold shadow-lg text-lg">
                 Crear mi Blog
-            </button>
-            <button onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})} className="border border-slate-600 text-slate-300 px-10 py-4 rounded-full hover:bg-white hover:text-slate-900 transition font-bold">
-                Volver arriba
             </button>
           </div>
           <p className="mt-16 text-xs text-slate-600 uppercase tracking-widest">Frontera Mexa © 2025</p>
       </div>
-
     </div>
   );
 };

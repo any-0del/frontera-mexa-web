@@ -1,19 +1,26 @@
 import React, { useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Image as ImageIcon, Type, Trash2, ArrowLeft, Send, Video, UploadCloud, MapPin, Briefcase, User } from 'lucide-react';
+import { Plus, Image as ImageIcon, Type, Trash2, ArrowLeft, Send, Video, UploadCloud, MapPin, Briefcase, User, Linkedin, Instagram, Twitter } from 'lucide-react';
 
 const EditorPage = ({ goBack }) => {
   const navigate = useNavigate();
   const [uploading, setUploading] = useState(false);
   
-  // --- DATOS DE CABECERA (LO NUEVO) ---
+  // --- DATOS DE CABECERA ---
   const [coverImage, setCoverImage] = useState(null); 
   const [coverPreview, setCoverPreview] = useState(null); 
   
   const [intervieweeName, setIntervieweeName] = useState(''); // Nombre
   const [profession, setProfession] = useState('');       // Profesión
   const [location, setLocation] = useState('');           // Lugar
+
+  // --- NUEVO: REDES SOCIALES ---
+  const [socialLinks, setSocialLinks] = useState({
+    linkedin: '',
+    instagram: '',
+    twitter: ''
+  });
 
   // Plantilla de preguntas
   const [blocks, setBlocks] = useState([
@@ -33,6 +40,11 @@ const EditorPage = ({ goBack }) => {
       setCoverImage(file);
       setCoverPreview(URL.createObjectURL(file));
     }
+  };
+
+  // NUEVO: Lógica Redes Sociales
+  const handleSocialChange = (e) => {
+    setSocialLinks({ ...socialLinks, [e.target.name]: e.target.value });
   };
 
   // Lógica Bloques
@@ -66,11 +78,8 @@ const EditorPage = ({ goBack }) => {
 
   // --- ENVÍO DE DATOS ---
   const handleSubmit = async () => {
-    // 1. Validaciones
     if (!coverImage) return alert("Falta la foto de portada.");
     if (!intervieweeName) return alert("Falta el nombre de la persona.");
-    if (!profession) return alert("Falta la profesión.");
-    if (!location) return alert("Falta el lugar.");
 
     setUploading(true);
 
@@ -96,19 +105,19 @@ const EditorPage = ({ goBack }) => {
             return block;
         }));
 
-        // Construimos el "Subtítulo" uniendo Profesión y Lugar
         const fullDescription = `${profession} • ${location}`;
 
-        // Guardar en DB
+        // Guardar en DB (INCLUYENDO SOCIAL LINKS)
         const { error } = await supabase
             .from('blogs')
             .insert({
-                title: intervieweeName,       // AQUÍ VA EL NOMBRE SOLO
-                description: fullDescription, // AQUÍ VA LA PROFESIÓN Y LUGAR
+                title: intervieweeName,
+                description: fullDescription,
                 content: processedBlocks,
                 author_id: user.id,
                 status: 'pending',
-                cover_image: coverUrl 
+                cover_image: coverUrl,
+                social_links: socialLinks // <--- AQUÍ SE GUARDAN LAS REDES
             });
 
         if (error) throw error;
@@ -150,36 +159,57 @@ const EditorPage = ({ goBack }) => {
             )}
         </div>
 
-        {/* --- 2. ZONA DE DATOS DEL PERFIL (LO NUEVO) --- */}
-        <div className="p-8 bg-slate-50 border-b border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="md:col-span-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1 flex items-center gap-1"><User size={14}/> Nombre de la Persona</label>
-                <input 
-                    value={intervieweeName}
-                    onChange={(e) => setIntervieweeName(e.target.value)}
-                    className="w-full text-3xl font-serif font-bold bg-transparent border-b-2 border-slate-300 focus:border-orange-600 outline-none placeholder-slate-300 transition py-2"
-                    placeholder="Ej: Victoria Ruiz"
-                />
-            </div>
-            
-            <div>
-                <label className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1 flex items-center gap-1"><Briefcase size={14}/> Profesión / Cargo</label>
-                <input 
-                    value={profession}
-                    onChange={(e) => setProfession(e.target.value)}
-                    className="w-full p-3 bg-white border border-slate-300 rounded focus:border-blue-500 outline-none"
-                    placeholder="Ej: Arquitecta Senior"
-                />
+        {/* --- 2. ZONA DE DATOS DEL PERFIL --- */}
+        <div className="p-8 bg-slate-50 border-b border-slate-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="md:col-span-2">
+                    <label className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1 flex items-center gap-1"><User size={14}/> Nombre de la Persona</label>
+                    <input 
+                        value={intervieweeName}
+                        onChange={(e) => setIntervieweeName(e.target.value)}
+                        className="w-full text-3xl font-serif font-bold bg-transparent border-b-2 border-slate-300 focus:border-orange-600 outline-none placeholder-slate-300 transition py-2"
+                        placeholder="Ej: Victoria Ruiz"
+                    />
+                </div>
+                
+                <div>
+                    <label className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1 flex items-center gap-1"><Briefcase size={14}/> Profesión / Cargo</label>
+                    <input 
+                        value={profession}
+                        onChange={(e) => setProfession(e.target.value)}
+                        className="w-full p-3 bg-white border border-slate-300 rounded focus:border-blue-500 outline-none"
+                        placeholder="Ej: Arquitecta Senior"
+                    />
+                </div>
+
+                <div>
+                    <label className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1 flex items-center gap-1"><MapPin size={14}/> Lugar / País</label>
+                    <input 
+                        value={location}
+                        onChange={(e) => setLocation(e.target.value)}
+                        className="w-full p-3 bg-white border border-slate-300 rounded focus:border-green-500 outline-none"
+                        placeholder="Ej: Londres, UK"
+                    />
+                </div>
             </div>
 
-            <div>
-                <label className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1 flex items-center gap-1"><MapPin size={14}/> Lugar / País</label>
-                <input 
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    className="w-full p-3 bg-white border border-slate-300 rounded focus:border-green-500 outline-none"
-                    placeholder="Ej: Londres, UK"
-                />
+            {/* --- NUEVA SECCIÓN: REDES SOCIALES --- */}
+            <div className="border-t border-slate-200 pt-6">
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">Redes Sociales (Opcional)</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-blue-600"><Linkedin size={16}/></div>
+                        <input name="linkedin" value={socialLinks.linkedin} onChange={handleSocialChange} className="pl-10 w-full p-2 bg-white border border-slate-300 rounded text-sm outline-none focus:border-blue-500" placeholder="Link de LinkedIn" />
+                    </div>
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-pink-600"><Instagram size={16}/></div>
+                        <input name="instagram" value={socialLinks.instagram} onChange={handleSocialChange} className="pl-10 w-full p-2 bg-white border border-slate-300 rounded text-sm outline-none focus:border-pink-500" placeholder="@usuario o Link" />
+                    </div>
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-800"><Twitter size={16}/></div>
+                        <input name="twitter" value={socialLinks.twitter} onChange={handleSocialChange} className="pl-10 w-full p-2 bg-white border border-slate-300 rounded text-sm outline-none focus:border-slate-800" placeholder="Link de X / Twitter" />
+                    </div>
+                </div>
             </div>
         </div>
 

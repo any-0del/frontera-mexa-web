@@ -45,8 +45,10 @@ const AdminPanel = () => {
     fetchBlogs();
   };
 
+  // Modifica SOLO esta función
   const toggleFeatured = async (id, currentStatus) => {
-    if (!currentStatus) await supabase.from('blogs').update({ is_featured: false }).neq('id', 0);
+    // ELIMINAMOS LA LÍNEA QUE RESETEABA A LOS DEMÁS
+    // Ahora solo cambiamos el estatus del que diste clic
     await supabase.from('blogs').update({ is_featured: !currentStatus }).eq('id', id);
     fetchBlogs();
   };
